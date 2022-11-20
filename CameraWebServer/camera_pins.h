@@ -1,5 +1,4 @@
-#define CAMERA_MODEL_AI_THINKER
-#define CAMERA_MODEL_WROVER_KIT
+
 #if defined(CAMERA_MODEL_WROVER_KIT)
 #define PWDN_GPIO_NUM    -1
 #define RESET_GPIO_NUM   -1

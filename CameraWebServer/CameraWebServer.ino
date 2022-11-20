@@ -1,45 +1,44 @@
-//camera libraries
-#include <mcu_tmf882x_config.h>
-#include <qwiic_i2c.h>
-#include <qwiic_tmf882x.h>
-#include <sfe_arduino.h>
-#include <SparkFun_TMF882X_Library.h>
-#include <tmf882x_interface.h>
-#include <tof_bin_image.h>
-#include <tof_factory_cal.h>
 #include "esp_camera.h"
 #include <WiFi.h>
 
-#include "camera_index.h"
-#include "camera_pins.h"
-#include "app_httpd.cpp"
+//
+// WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
+//            Ensure ESP32 Wrover Module or other board with PSRAM is selected
+//            Partial images will be transmitted if image exceeds buffer size
+//
+//            You must select partition scheme from the board menu that has at least 3MB APP space.
+//            Face Recognition is DISABLED for ESP32 and ESP32-S2, because it takes up from 15 
+//            seconds to process single frame. Face Detection is ENABLED if PSRAM is enabled as well
 
-//camera model
+// ===================
+// Select camera model
+// ===================
+//#define CAMERA_MODEL_WROVER_KIT // Has PSRAM
+//#define CAMERA_MODEL_ESP_EYE // Has PSRAM
+//#define CAMERA_MODEL_ESP32S3_EYE // Has PSRAM
+//#define CAMERA_MODEL_M5STACK_PSRAM // Has PSRAM
+//#define CAMERA_MODEL_M5STACK_V2_PSRAM // M5Camera version B Has PSRAM
+//#define CAMERA_MODEL_M5STACK_WIDE // Has PSRAM
+//#define CAMERA_MODEL_M5STACK_ESP32CAM // No PSRAM
+//#define CAMERA_MODEL_M5STACK_UNITCAM // No PSRAM
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
+//#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
+// ** Espressif Internal Boards **
+//#define CAMERA_MODEL_ESP32_CAM_BOARD
+//#define CAMERA_MODEL_ESP32S2_CAM_BOARD
+//#define CAMERA_MODEL_ESP32S3_CAM_LCD
 
-//sensor libraries
-#include "Arduino.h"
-#include <Wire.h>
-#include "SparkFun_TMF882X_Library.h" //http://librarymanager/All#SparkFun_Qwiic_TMPF882X
+#include "camera_pins.h"
 
-//sensor pin definitions
-#define I2C_SDA 14
-#define I2C_SCL 15
-TwoWire I2CSensors = TwoWire(0);
-SparkFun_TMF882X  myTMF882X;
-// Structure to hold the measurement results - this is defined by the TMF882X SDK.
-static struct tmf882x_msg_meas_results myResults;
-
-//esp32 wifi credentials
+// ===========================
+// Enter your WiFi credentials
+// ===========================
 const char* ssid = "gapi2022";
 const char* password = "Matrim59";
 
-//camera thing
 void startCameraServer();
 
-
-void setup(){
-//camera setup
+void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
@@ -140,54 +139,9 @@ void setup(){
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
-
-
-//sensor setup
-    I2CSensors.begin(I2C_SDA, I2C_SCL, 100000ul);
-    delay(1000);
-    Serial.begin(115200);
-    Serial.println("");
-
-    Serial.println("In setup");
-    Serial.println("==============================");
-
-    // Initialize the TMF882X device
-    //0x76, &I2CSensors - in the parenthesis
-    if(!myTMF882X.begin())
-    {
-        Serial.println("Error - The TMF882X failed to initialize - is the board connected?");
-        while(1);
-    }else
-        Serial.println("TMF882X started.");
-
-    // The device is now ready for operations
 }
 
-void loop()
-{
-    delay(2000);
-    // get a Measurement
-    if(myTMF882X.startMeasuring(myResults))
-    {
-        // print out results
-        Serial.println("Measurement:");
-        Serial.print("     Result Number: "); Serial.print(myResults.result_num);
-        Serial.print("  Number of Results: "); Serial.println(myResults.num_results);       
-
-        for (int i = 0; i < myResults.num_results; ++i) 
-        {
-            Serial.print("       conf: "); Serial.print(myResults.results[i].confidence);
-            //confidence level (0,255) with 255 being the highest
-            Serial.print(" distance mm: "); Serial.print(myResults.results[i].distance_mm);
-            Serial.print(" channel: "); Serial.print(myResults.results[i].channel);
-            Serial.print(" sub_capture: "); Serial.println(myResults.results[i].sub_capture);   
-
-        }
-        Serial.print("     photon: "); Serial.print(myResults.photon_count);    
-        Serial.print(" ref photon: "); Serial.print(myResults.ref_photon_count);
-        Serial.print(" ALS: "); Serial.println(myResults.ambient_light); Serial.println();
-
-    }
-//the delay for the camera needs to be 10000
-
+void loop() {
+  // Do nothing. Everything is done in another task by the web server
+  delay(10000);
 }
